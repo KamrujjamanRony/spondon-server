@@ -9,15 +9,19 @@ const SECRET_KEY = process.env.JWT_SECRET;
 // Admin Registration
 router.post("/register", async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { username, password, role } = req.body;
+        if (!["admin", "editor"].includes(role)) return res.status(400).json({ message: "Invalid role" });
+
         const hashedPassword = await bcrypt.hash(password, 10);
-        const admin = new Admin({ username, password: hashedPassword });
+        const admin = new Admin({ username, password: hashedPassword, role });
         await admin.save();
+
         res.status(201).json({ message: "Admin registered successfully" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
+
 
 // Admin Login
 router.post("/login", async (req, res) => {
@@ -29,7 +33,7 @@ router.post("/login", async (req, res) => {
         const isMatch = await bcrypt.compare(password, admin.password);
         if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-        const token = jwt.sign({ id: admin._id }, SECRET_KEY, { expiresIn: "1h" });
+        const token = jwt.sign({ id: admin._id, role: admin.role }, SECRET_KEY, { expiresIn: "1h" });
         res.json({ token, admin });
     } catch (error) {
         res.status(500).json({ error: error.message });
