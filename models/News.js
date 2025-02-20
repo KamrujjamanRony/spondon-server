@@ -7,6 +7,7 @@ const newsSchema = new mongoose.Schema(
         author: { type: String, required: true },
         category: { type: String, required: true },
         imageUrl: { type: String },
+        videoUrl: { type: String },
     },
     { timestamps: true }
 );

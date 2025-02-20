@@ -33,7 +33,7 @@ router.post("/login", async (req, res) => {
         const isMatch = await bcrypt.compare(password, admin.password);
         if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-        const token = jwt.sign({ id: admin._id, role: admin.role }, SECRET_KEY, { expiresIn: "1h" });
+        const token = jwt.sign({ id: admin._id, username: admin.username, role: admin.role }, SECRET_KEY, { expiresIn: "1h" });
         res.json({ token, admin });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -45,6 +45,30 @@ router.get("/", async (req, res) => {
     try {
         const admins = await Admin.find();
         res.json(admins);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+// Get Single Admin by ID
+router.get("/:id", async (req, res) => {
+    try {
+        const admin = await Admin.findById(req.params.id);
+        if (!admin) return res.status(404).json({ message: "Admin not found" });
+        res.status(200).json(admin);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update Admin
+router.put("/:id", async (req, res) => {
+    try {
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        const reqBody = { ...req.body, password: hashedPassword };
+        const admin = await Admin.findByIdAndUpdate(req.params.id, reqBody, { new: true });
+        res.status(200).json(admin);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

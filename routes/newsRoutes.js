@@ -11,7 +11,7 @@ router.post("/", authMiddleware, async (req, res) => {
             return res.status(403).json({ message: "Access forbidden: You don't have permission to create news" });
         }
 
-        const { title, content, category } = req.body;
+        const { title, content, category, imageUrl, videoUrl } = req.body;
         if (!title || !content || !category) {
             return res.status(400).json({ message: "All fields are required" });
         }
@@ -20,7 +20,9 @@ router.post("/", authMiddleware, async (req, res) => {
             title,
             content,
             category,
-            author: req.admin.id, // ✅ Save admin ID as author
+            imageUrl,
+            videoUrl,
+            author: req.admin.username, // ✅ Save admin username as author
         });
 
         await news.save();
